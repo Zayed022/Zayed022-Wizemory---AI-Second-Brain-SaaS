@@ -376,7 +376,7 @@ export default function KnowledgeGraphClient({ itemCount, plan }: { itemCount: n
 
     // ── Hover interactions ─────────────────────────────────────────────────
     nodesSel
-      .on('mouseenter', function(event: any, d: any) {
+    .on('mouseleave', function(this: SVGGElement, event: any, d: any) {
         // Glow the hovered node
         d3.select(this).select('.node-fill')
           .transition().duration(150)
@@ -431,7 +431,7 @@ export default function KnowledgeGraphClient({ itemCount, plan }: { itemCount: n
             return connected ? 1 : 0.25
           })
       })
-      .on('mouseleave', function(event: any, d: any) {
+      .on('mouseleave', function(this: SVGGElement, event: any, d: any) {
         d3.select(this).select('.node-fill')
           .transition().duration(200)
           .attr('r', d.size)
