@@ -100,8 +100,9 @@ export async function GET(req: NextRequest) {
   }
 
   const zipBuffer = buildZip(zipEntries)
+  const uint8 = new Uint8Array(zipBuffer)
 
-  return new NextResponse(zipBuffer, {
+  return new NextResponse(uint8, {
     headers: {
       'Content-Type':        'application/zip',
       'Content-Disposition': `attachment; filename="wizemory-knowledge-${new Date().toISOString().split('T')[0]}.zip"`,
