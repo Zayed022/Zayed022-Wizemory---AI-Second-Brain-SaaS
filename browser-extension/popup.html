@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memora</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 340px;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f7f6f2;
+      color: #1a1714;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      background: white;
+      border-bottom: 1px solid #eeecea;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: #1a1714;
+    }
+
+    .logo span { color: #7340f5; }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+
+    .status-dot.offline { background: #d9d6d0; }
+
+    .page-preview {
+      background: white;
+      margin: 12px;
+      border-radius: 14px;
+      border: 1px solid #eeecea;
+      padding: 14px;
+    }
+
+    .page-url {
+      font-size: 11px;
+      color: #928c82;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .page-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1714;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .actions {
+      padding: 0 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 12px;
+      background: #1a1714;
+      color: #f7f6f2;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+
+    .btn-save:hover  { background: #2e2a24; }
+    .btn-save:active { transform: scale(0.98); }
+
+    .btn-save:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-save.saving { background: #47413a; }
+    .btn-save.saved  { background: #3d7e3d; }
+
+    .type-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .type-btn {
+      padding: 8px 4px;
+      background: white;
+      border: 1px solid #eeecea;
+      border-radius: 10px;
+      font-size: 11px;
+      color: #5a5449;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .type-btn:hover   { border-color: #b8b3aa; color: #1a1714; }
+    .type-btn.active  { background: #1a1714; color: white; border-color: #1a1714; }
+    .type-btn .emoji  { font-size: 16px; }
+
+    .note-area {
+      width: 100%;
+      padding: 10px 12px;
+      background: white;
+      border: 1px solid #eeecea;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #1a1714;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      transition: border-color 0.15s;
+    }
+
+    .note-area:focus { border-color: #7340f5; }
+    .note-area::placeholder { color: #b8b3aa; }
+
+    .state-panel {
+      padding: 24px 16px;
+      text-align: center;
+    }
+
+    .state-icon { font-size: 32px; margin-bottom: 10px; }
+
+    .state-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1714;
+      margin-bottom: 6px;
+    }
+
+    .state-sub {
+      font-size: 12px;
+      color: #928c82;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .btn-small {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #7340f5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-small:hover { background: #6325e8; }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .shortcut-hint {
+      text-align: center;
+      font-size: 11px;
+      color: #b8b3aa;
+      padding: 0 12px 12px;
+    }
+
+    kbd {
+      background: #eeecea;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: monospace;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">mem<span>ora</span></div>
+    <div class="status-dot" id="status-dot"></div>
+  </div>
+
+  <!-- Not logged in state -->
+  <div id="state-auth" class="state-panel" style="display:none">
+    <div class="state-icon">🔐</div>
+    <div class="state-title">Sign in to Memora</div>
+    <div class="state-sub">Save unlimited articles, notes, and ideas to your AI second brain.</div>
+    <a href="https://memora.app/auth/sign-in" target="_blank" class="btn-small">Sign in →</a>
+  </div>
+
+  <!-- Main save UI -->
+  <div id="state-main" style="display:none">
+    <div class="page-preview">
+      <div class="page-url" id="page-url">Loading…</div>
+      <div class="page-title" id="page-title">Loading page title…</div>
+    </div>
+
+    <div class="actions">
+      <div class="type-row">
+        <button class="type-btn active" data-type="ARTICLE" id="type-ARTICLE">
+          <span class="emoji">🔗</span>
+          Article
+        </button>
+        <button class="type-btn" data-type="BOOKMARK">
+          <span class="emoji">🔖</span>
+          Bookmark
+        </button>
+        <button class="type-btn" data-type="NOTE">
+          <span class="emoji">📝</span>
+          Note
+        </button>
+        <button class="type-btn" data-type="SCREENSHOT">
+          <span class="emoji">🖼️</span>
+          Screenshot
+        </button>
+      </div>
+
+      <textarea
+        id="note-input"
+        class="note-area"
+        rows="2"
+        placeholder="Add a personal note (optional)…"
+        style="display:none"
+      ></textarea>
+
+      <button class="btn-save" id="save-btn">
+        <span id="save-icon">✦</span>
+        <span id="save-label">Save to Memora</span>
+      </button>
+    </div>
+
+    <div class="shortcut-hint">
+      Quick save: <kbd>Alt+Shift+S</kbd>
+    </div>
+  </div>
+
+  <!-- Saved success state -->
+  <div id="state-saved" class="state-panel" style="display:none">
+    <div class="state-icon">✅</div>
+    <div class="state-title">Saved!</div>
+    <div class="state-sub">AI is processing it now. It'll be ready in your knowledge base in seconds.</div>
+    <a href="https://memora.app/dashboard" target="_blank" class="btn-small">Open Memora →</a>
+  </div>
+
+  <!-- Error state -->
+  <div id="state-error" class="state-panel" style="display:none">
+    <div class="state-icon">⚠️</div>
+    <div class="state-title" id="error-title">Something went wrong</div>
+    <div class="state-sub" id="error-sub">Please try again.</div>
+    <button class="btn-small" onclick="resetToMain()">Try again</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

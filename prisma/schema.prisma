@@ -1,0 +1,253 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                   String   @id @default(cuid())
+  clerkId              String   @unique
+  email                String   @default("")
+  name                 String?
+  avatarUrl            String?
+  plan                 Plan     @default(FREE)
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  itemCount            Int      @default(0)
+  streak               Int      @default(0)
+  lastActiveAt         DateTime @default(now())
+  referralCode         String?  @unique
+  referredBy           String?
+  referralCount        Int      @default(0)
+  totalSaved           Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  items            Item[]
+  connections      Connection[]
+  digests          WeeklyDigest[]
+  collections      Collection[]
+  highlights       Highlight[]
+  reminders        Reminder[]
+  knowledgeGraph   KnowledgeGraph?
+  stats            UserStats?
+  affiliatePayouts AffiliatePayout[]
+
+  @@index([clerkId])
+  @@index([referralCode])
+}
+
+model Item {
+  id           String     @id @default(cuid())
+  userId       String
+  type         ItemType
+  title        String
+  url          String?
+  domain       String?
+  rawContent   String?    @db.Text
+  summary      String?    @db.Text
+  keyInsights  String[]
+  tags         String[]
+  readTime     Int?
+  fileKey      String?
+  audioKey     String?
+  youtubeId    String?
+  status       ItemStatus @default(PROCESSING)
+  isPublic     Boolean    @default(false)
+  publicSlug   String?    @unique
+  viewCount    Int        @default(0)
+  isFavorite   Boolean    @default(false)
+  reviewCount  Int        @default(0)
+  nextReviewAt DateTime?
+  embedding    Float[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connections     ConnectionItem[]
+  collectionItems CollectionItem[]
+  highlights      Highlight[]
+  reminders       Reminder[]
+
+  @@index([userId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([tags])
+  @@index([publicSlug])
+  @@index([userId, status])
+  @@index([userId, nextReviewAt])
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  emoji       String?
+  color       String?
+  isPublic    Boolean  @default(false)
+  publicSlug  String?  @unique
+  itemCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CollectionItem[]
+
+  @@index([userId])
+}
+
+model CollectionItem {
+  collectionId String
+  itemId       String
+  order        Int      @default(0)
+  addedAt      DateTime @default(now())
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  item       Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, itemId])
+  @@index([collectionId])
+}
+
+model Highlight {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  text      String   @db.Text
+  note      String?  @db.Text
+  color     String   @default("yellow")
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([itemId])
+}
+
+model Reminder {
+  id          String         @id @default(cuid())
+  userId      String
+  itemId      String?
+  title       String
+  message     String?
+  scheduledAt DateTime
+  status      ReminderStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([scheduledAt, status])
+}
+
+model Connection {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?  @db.Text
+  strength    Float    @default(0.5)
+  createdAt   DateTime @default(now())
+
+  user  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items ConnectionItem[]
+
+  @@index([userId])
+}
+
+model ConnectionItem {
+  connectionId String
+  itemId       String
+
+  connection Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  item       Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([connectionId, itemId])
+}
+
+model WeeklyDigest {
+  id        String   @id @default(cuid())
+  userId    String
+  content   String   @db.Text
+  weekStart DateTime
+  sentAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model KnowledgeGraph {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  nodes     Json
+  edges     Json
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserStats {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  totalItemsSaved     Int      @default(0)
+  totalSummaries      Int      @default(0)
+  totalReviews        Int      @default(0)
+  totalAiQueries      Int      @default(0)
+  estimatedHoursSaved Float    @default(0)
+  knowledgeScore      Int      @default(0)
+  conceptsRetained    Int      @default(0)
+  longestStreak       Int      @default(0)
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AffiliatePayout {
+  id           String   @id @default(cuid())
+  userId       String
+  amount       Float
+  status       String   @default("pending")
+  referralCode String
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum Plan {
+  FREE
+  PRO
+  TEAM
+  BUSINESS
+}
+
+enum ItemType {
+  ARTICLE
+  NOTE
+  VOICE
+  PDF
+  SCREENSHOT
+  BOOKMARK
+  YOUTUBE
+  PODCAST
+}
+
+enum ItemStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  DISMISSED
+}

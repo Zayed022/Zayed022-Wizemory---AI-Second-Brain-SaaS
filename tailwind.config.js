@@ -1,0 +1,81 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans:    ['var(--font-body)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
+        mono:    ['var(--font-mono)', 'monospace'],
+      },
+      colors: {
+        ink: {
+          50:  '#f7f6f2',
+          100: '#eeecea',
+          200: '#d9d6d0',
+          300: '#b8b3aa',
+          400: '#928c82',
+          500: '#716b61',
+          600: '#5a5449',
+          700: '#47413a',
+          800: '#2e2a24',
+          900: '#1a1714',
+          950: '#0d0b09',
+        },
+        violet: {
+          50:  '#f3f0ff',
+          100: '#e4dcff',
+          200: '#ccbdff',
+          300: '#a98eff',
+          400: '#8b61fd',
+          500: '#7340f5',
+          600: '#6325e8',
+          700: '#531ccc',
+          800: '#431aa6',
+          900: '#361784',
+        },
+        sage: {
+          50:  '#f0f5f0',
+          100: '#ddeadd',
+          200: '#b8d4b8',
+          300: '#8ab98a',
+          400: '#5e9c5e',
+          500: '#3d7e3d',
+          600: '#2e6530',
+          700: '#254f27',
+          800: '#1d3e1e',
+          900: '#152e16',
+        },
+      },
+      borderRadius: {
+        '2xl': '14px',
+        '3xl': '20px',
+      },
+      boxShadow: {
+        'card': '0 1px 3px rgba(26,23,20,0.06), 0 1px 2px rgba(26,23,20,0.04)',
+        'card-hover': '0 4px 16px rgba(26,23,20,0.08), 0 2px 4px rgba(26,23,20,0.04)',
+        'panel': '0 8px 32px rgba(26,23,20,0.10)',
+      },
+      animation: {
+        'fade-up':    'fadeUp 0.45s ease forwards',
+        'fade-in':    'fadeIn 0.3s ease forwards',
+        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+        'float':      'float 6s ease-in-out infinite',
+        'shimmer':    'shimmer 1.5s infinite',
+        'bounce-slow':'bounceSlow 2s ease-in-out infinite',
+      },
+      keyframes: {
+        fadeUp:     { '0%': { opacity: '0', transform: 'translateY(14px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        fadeIn:     { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+        pulseSoft:  { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.55' } },
+        float:      { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-6px)' } },
+        shimmer:    { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+        bounceSlow: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-4px)' } },
+      },
+    },
+  },
+  plugins: [require('tailwindcss-animate')],
+}

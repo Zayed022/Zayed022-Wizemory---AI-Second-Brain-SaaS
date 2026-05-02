@@ -1,0 +1,51 @@
+{
+  "name": "wizemory",
+  "version": "3.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "prisma generate",
+    "dev":         "next dev",
+    "build":       "prisma generate && next build",
+    "start":       "next start",
+    "lint":        "next lint",
+    "db:push":     "prisma db push",
+    "db:generate": "prisma generate",
+    "db:studio":   "prisma studio"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3":            "^3.600.0",
+    "@aws-sdk/s3-request-presigner": "^3.600.0",
+    "@clerk/nextjs":                 "^5.1.0",
+    "@prisma/client":                "^5.14.0",
+    "@radix-ui/react-dialog":        "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-select":        "^2.0.0",
+    "@radix-ui/react-toast":         "^1.1.5",
+    "@radix-ui/react-tooltip":       "^1.0.7",
+    "@stripe/stripe-js":             "^3.4.1",
+    "@upstash/redis":                "^1.31.5",
+    "clsx":                          "^2.1.1",
+    "framer-motion":                 "^11.2.9",
+    "lucide-react":                  "^0.383.0",
+    "next":                          "14.2.3",
+    "react":                         "^18.3.1",
+    "react-dom":                     "^18.3.1",
+    "react-dropzone":                "^14.2.3",
+    "react-hot-toast":               "^2.4.1",
+    "react-markdown":                "^9.0.1",
+    "stripe":                        "^15.11.0",
+    "tailwind-merge":                "^2.3.0",
+    "tailwindcss-animate":           "^1.0.7",
+    "zod":                           "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node":      "^20.14.2",
+    "@types/react":     "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "prisma":           "^5.14.0",
+    "tailwindcss":      "^3.4.4",
+    "typescript":       "^5.4.5",
+    "autoprefixer":     "^10.4.19",
+    "postcss":          "^8.4.38"
+  }
+}
