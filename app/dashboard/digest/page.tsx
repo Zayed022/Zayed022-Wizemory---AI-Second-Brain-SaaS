@@ -1,7 +1,9 @@
+export const dynamic = 'force-dynamic'
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
+import UpgradeGate from '@/components/ui/UpgradeGate'
 
 export default async function DigestPage() {
   const { userId } = auth()
@@ -10,10 +12,26 @@ export default async function DigestPage() {
   const user = await prisma.user.findUnique({ where: { clerkId: userId } })
   if (!user) redirect('/auth/sign-in')
 
+  if (user.plan === 'FREE') {
+    return (
+      <UpgradeGate
+        icon="◇"
+        feature="Weekly Digest"
+        description="Every Monday, a personalised AI digest of your week — themes discovered, patterns identified, connections made, and one actionable nudge."
+        bullets={[
+          'AI synthesis of everything you saved that week',
+          'Hidden pattern detection across your knowledge base',
+          'Delivered to your inbox every Monday morning',
+          'Stored in-app so you can revisit past digests',
+        ]}
+      />
+    )
+  }
+
   const digests = await prisma.weeklyDigest.findMany({
-    where: { userId: user.id },
+    where:   { userId: user.id },
     orderBy: { sentAt: 'desc' },
-    take: 10,
+    take:    10,
   })
 
   return (
@@ -24,10 +42,8 @@ export default async function DigestPage() {
           <p className="text-ink-400 text-sm mt-1">AI-generated summaries of your weekly learning</p>
         </div>
         <form action="/api/digest/generate" method="POST">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-ink-900 text-ink-50 rounded-xl text-sm font-medium hover:bg-ink-800 transition-colors"
-          >
+          <button type="submit"
+            className="px-4 py-2 bg-ink-900 text-ink-50 rounded-xl text-sm font-medium hover:bg-ink-800 transition-colors">
             Generate now
           </button>
         </form>

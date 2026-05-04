@@ -40,7 +40,7 @@ function EmptyState({ itemCount }: { itemCount: number }) {
         <div className="text-center max-w-sm px-6">
           <div className="w-20 h-20 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-3xl mx-auto mb-6">◈</div>
           <h2 className="text-white text-xl font-medium mb-3">Your knowledge graph awaits</h2>
-          <p className="text-white/40 text-sm leading-relaxed mb-6">Save your first article, note, or YouTube video. WizeMory's AI will build connections between everything you save — automatically.</p>
+          <p className="text-white/40 text-sm leading-relaxed mb-6">Save your first article, note, or YouTube video. Memora's AI will build connections between everything you save — automatically.</p>
           <Link href="/dashboard/add" className="inline-block px-6 py-3 bg-violet-600 text-white rounded-xl text-sm font-medium hover:bg-violet-500 transition-colors">
             Save your first item →
           </Link>
@@ -376,7 +376,7 @@ export default function KnowledgeGraphClient({ itemCount, plan }: { itemCount: n
 
     // ── Hover interactions ─────────────────────────────────────────────────
     nodesSel
-    .on('mouseleave', function(this: SVGGElement, event: any, d: any) {
+    .on('mouseenter', function(this: SVGGElement, event: any, d: any) {
         // Glow the hovered node
         d3.select(this).select('.node-fill')
           .transition().duration(150)
@@ -431,7 +431,7 @@ export default function KnowledgeGraphClient({ itemCount, plan }: { itemCount: n
             return connected ? 1 : 0.25
           })
       })
-      .on('mouseleave', function(this: SVGGElement, event: any, d: any) {
+      .on('mouseenter', function(this: SVGGElement, event: any, d: any) {
         d3.select(this).select('.node-fill')
           .transition().duration(200)
           .attr('r', d.size)
