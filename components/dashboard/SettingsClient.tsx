@@ -262,18 +262,36 @@ export default function SettingsClient({ user, clerkUser }: { user: any; clerkUs
 
       {/* ── Data export ────────────────────────────────────────────────── */}
       <div className="bg-white border border-ink-100 rounded-2xl p-6">
-        <h2 className="font-medium text-ink-900 mb-1">Export your data</h2>
-        <p className="text-xs text-ink-400 mb-4">Download everything you've saved in portable formats.</p>
-        <div className="flex gap-3">
-          <button onClick={() => exportData('zip')} disabled={exporting}
-            className="flex-1 py-2.5 bg-ink-900 text-ink-50 rounded-xl text-sm font-medium hover:bg-ink-800 disabled:opacity-50 transition-all">
-            {exporting ? 'Exporting…' : 'Export as ZIP (Markdown + Graph)'}
-          </button>
-          <button onClick={() => exportData('json')} disabled={exporting}
-            className="flex-1 py-2.5 bg-white border border-ink-200 text-ink-700 rounded-xl text-sm font-medium hover:bg-ink-50 disabled:opacity-50 transition-all">
-            Export as JSON
-          </button>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="font-medium text-ink-900">Export your data</h2>
+          {currentPlan === 'FREE' && (
+            <span className="text-[10px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold">PRO</span>
+          )}
         </div>
+        <p className="text-xs text-ink-400 mb-4">Download everything you've saved in portable formats.</p>
+        {currentPlan === 'FREE' ? (
+          <div className="p-4 bg-violet-50 border border-violet-100 rounded-xl flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-violet-900">Export requires Pro plan</p>
+              <p className="text-xs text-violet-600 mt-0.5">Upgrade to download your knowledge as Markdown, JSON, or a full graph ZIP.</p>
+            </div>
+            <Link href="/pricing"
+              className="shrink-0 px-4 py-2 bg-violet-600 text-white rounded-xl text-xs font-medium hover:bg-violet-700 transition-colors">
+              Upgrade →
+            </Link>
+          </div>
+        ) : (
+          <div className="flex gap-3">
+            <button onClick={() => exportData('zip')} disabled={exporting}
+              className="flex-1 py-2.5 bg-ink-900 text-ink-50 rounded-xl text-sm font-medium hover:bg-ink-800 disabled:opacity-50 transition-all">
+              {exporting ? 'Exporting…' : 'Export as ZIP (Markdown + Graph)'}
+            </button>
+            <button onClick={() => exportData('json')} disabled={exporting}
+              className="flex-1 py-2.5 bg-white border border-ink-200 text-ink-700 rounded-xl text-sm font-medium hover:bg-ink-50 disabled:opacity-50 transition-all">
+              Export as JSON
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── Privacy & GDPR ─────────────────────────────────────────────── */}
