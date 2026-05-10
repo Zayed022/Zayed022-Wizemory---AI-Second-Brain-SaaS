@@ -1,7 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 const isPublicRoute = createRouteMatcher([
-  // Marketing pages
   '/',
   '/pricing',
   '/demo',
@@ -16,23 +17,13 @@ const isPublicRoute = createRouteMatcher([
   '/terms',
   '/founder',
   '/tools/(.*)',
-
-  // Public share cards
   '/share/(.*)',
-
-  // Auth
   '/auth/(.*)',
-
-  // SEO — explicitly allow crawlers
   '/sitemap.xml',
   '/robots.txt',
-
-  // Public API webhooks — must NOT require auth
   '/api/auth/webhook',
   '/api/billing/webhook',
   '/api/paddle/webhook',
-
-  // Public health check
   '/api/health',
 ])
 
@@ -44,7 +35,14 @@ export default clerkMiddleware((auth, req) => {
 
 export const config = {
   matcher: [
-    // ✅ Cleaner matcher — don't try to exclude sitemap/robots here
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    /*
+     * Match all paths EXCEPT:
+     * - _next/static  (static files)
+     * - _next/image   (image optimization)
+     * - favicon.ico
+     * - sitemap.xml   ← bypass Clerk entirely at matcher level
+     * - robots.txt    ← bypass Clerk entirely at matcher level
+     */
+    '/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt).*)',
   ],
 }
