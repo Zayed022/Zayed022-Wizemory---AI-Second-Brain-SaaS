@@ -23,6 +23,10 @@ const isPublicRoute = createRouteMatcher([
   // Auth
   '/auth/(.*)',
 
+  // SEO — explicitly allow crawlers
+  '/sitemap.xml',
+  '/robots.txt',
+
   // Public API webhooks — must NOT require auth
   '/api/auth/webhook',
   '/api/billing/webhook',
@@ -40,7 +44,7 @@ export default clerkMiddleware((auth, req) => {
 
 export const config = {
   matcher: [
-    '/((?!_next|.*\\..*|api|trpc|sitemap.xml|robots.txt).*)',
-    '/(api|trpc)(.*)',
+    // ✅ Cleaner matcher — don't try to exclude sitemap/robots here
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }
