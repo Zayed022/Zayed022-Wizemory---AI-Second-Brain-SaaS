@@ -1,38 +1,30 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
-interface ReferralData {
+interface Props {
   code: string
-  url: string
+  referralUrl: string
   referralCount: number
-  freeMonthsEarned: number
-  progress: number
-  progressTotal: number
+  plan: string
 }
 
-export default function ReferralClient() {
-  const [data, setData]       = useState<ReferralData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState('')
-  const [copied, setCopied]   = useState(false)
+export default function ReferralClient({ code, referralUrl, referralCount, plan }: Props) {
+  const [copied, setCopied] = useState(false)
 
-  useEffect(() => {
-    fetch('/api/referral')
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
-      .then(d  => { setData(d); setLoading(false) })
-      .catch(() => { setError('Could not load referral data. Please refresh.'); setLoading(false) })
-  }, [])
+  const progressTotal = 3
+  const progress      = referralCount % progressTotal
+  const freeMonthsEarned = Math.floor(referralCount / progressTotal)
+  const pct           = Math.min((progress / progressTotal) * 100, 100)
 
   async function copyLink() {
-    if (!data?.url) return
     try {
       if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(data.url)
+        await navigator.clipboard.writeText(referralUrl)
       } else {
         const ta = document.createElement('textarea')
-        ta.value = data.url; ta.style.position = 'fixed'; ta.style.opacity = '0'
+        ta.value = referralUrl; ta.style.position = 'fixed'; ta.style.opacity = '0'
         document.body.appendChild(ta); ta.focus(); ta.select()
         document.execCommand('copy'); document.body.removeChild(ta)
       }
@@ -44,40 +36,14 @@ export default function ReferralClient() {
   }
 
   function share(platform: 'twitter' | 'whatsapp' | 'linkedin') {
-    if (!data?.url) return
-    const msg = `I use WizeMory to save articles and build my AI second brain. It summarises everything automatically.\n\nTry it free: ${data.url}`
+    const msg = `I use WizeMory to save articles and build my AI second brain. It summarises everything automatically.\n\nTry it free: ${referralUrl}`
     const urls: Record<string, string> = {
       twitter:  `https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`,
       whatsapp: `https://wa.me/?text=${encodeURIComponent(msg)}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(data.url)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralUrl)}`,
     }
     window.open(urls[platform], '_blank', 'noopener,noreferrer')
   }
-
-  if (loading) return (
-    <div className="p-6 max-w-2xl mx-auto space-y-4 animate-pulse">
-      <div className="h-8 w-48 bg-ink-100 rounded-lg" />
-      <div className="h-28 bg-ink-100 rounded-2xl" />
-      <div className="h-20 bg-ink-100 rounded-2xl" />
-      <div className="h-20 bg-ink-100 rounded-2xl" />
-    </div>
-  )
-
-  if (error || !data) return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center">
-        <div className="text-2xl mb-2">⚠️</div>
-        <p className="text-sm text-red-700">{error || 'Something went wrong.'}</p>
-        <button onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium">
-          Refresh
-        </button>
-      </div>
-    </div>
-  )
-
-  const { code, url, referralCount, freeMonthsEarned, progress, progressTotal } = data
-  const pct = Math.min((progress / progressTotal) * 100, 100)
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-5">
@@ -122,7 +88,7 @@ export default function ReferralClient() {
       <div className="bg-white border border-ink-100 rounded-2xl p-5">
         <div className="text-sm font-medium text-ink-700 mb-3">Your referral link</div>
         <div className="flex gap-2">
-          <input id="ref-url" readOnly value={url}
+          <input id="ref-url" readOnly value={referralUrl}
             onFocus={e => e.target.select()}
             className="flex-1 px-3 py-2.5 bg-ink-50 border border-ink-100 rounded-xl text-sm text-ink-600 font-mono truncate outline-none focus:border-violet-300 cursor-text" />
           <button onClick={copyLink}

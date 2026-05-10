@@ -16,19 +16,17 @@ export default async function ReferralPage() {
     where: {
       clerkId: userId,
     },
-    select: {
-      id: true,
-      referralCode: true,
-    },
   })
 
   if (!user) {
     redirect('/auth/sign-in')
   }
 
-  // Generate referral code if missing
+  // Generate referral code if none exists
   if (!user.referralCode) {
-    const code = crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+    const code = Math.random()
+      .toString(36)
+      .substring(2, 10)
 
     user = await prisma.user.update({
       where: {
@@ -37,12 +35,22 @@ export default async function ReferralPage() {
       data: {
         referralCode: code,
       },
-      select: {
-        id: true,
-        referralCode: true,
-      },
     })
   }
 
-  return <ReferralClient />
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    'https://wizemory.com'
+
+    const progressTotal    = 3
+const freeMonthsEarned = Math.floor(user.referralCount / progressTotal)
+const progress         = user.referralCount % progressTotal
+  return (
+    <ReferralClient
+      code={user.referralCode!}
+      referralUrl={`${appUrl}/auth/sign-up?ref=${user.referralCode}`}
+      referralCount={user.referralCount}
+      plan={user.plan}
+    />
+  )
 }
