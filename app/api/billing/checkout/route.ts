@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
 
     const paddle = new Paddle(paddleKey, {
       environment: process.env.PADDLE_ENVIRONMENT === 'production'
-        ? Environment.Production
-        : Environment.Sandbox,
+        ? Environment.production
+        : Environment.sandbox,
     })
 
     const email = clerkUser.emailAddresses[0]?.emailAddress ?? ''
