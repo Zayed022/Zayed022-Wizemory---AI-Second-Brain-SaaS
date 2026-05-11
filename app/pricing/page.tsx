@@ -47,15 +47,20 @@ export default function PricingPage() {
 
   function initPaddle() {
     const Paddle = (window as any).Paddle
+  
     if (!Paddle) return
-    Paddle.Setup({
-      token: process.env.PADDLE_API_KEY,
+  
+    Paddle.Initialize({
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
       eventCallback: (event: any) => {
+        console.log(event)
+  
         if (event.name === 'checkout.completed') {
           window.location.href = '/dashboard/settings?upgraded=1'
         }
       },
     })
+  
     setPaddleReady(true)
   }
 
@@ -72,7 +77,9 @@ export default function PricingPage() {
       if (data.url) {
         const Paddle = (window as any).Paddle
         if (Paddle && paddleReady) {
-          Paddle.Checkout.open({ url: data.url })  // ✅ overlay, not redirect
+          Paddle.Checkout.open({
+            transactionId: data.transactionId,
+          }) // ✅ overlay, not redirect
         } else {
           window.location.href = data.url           // fallback
         }

@@ -61,9 +61,12 @@ export async function POST(req: NextRequest) {
     let paddleCustomerId = user.paddleCustomerId ?? undefined
 
     if (!paddleCustomerId) {
-      const customers = await paddle.customers.list({ email: [email] })
-      const existing  = customers.data?.[0]
-
+      let existing: any = null
+      for await (const customer of paddle.customers.list({ email: [email] })) {
+        existing = customer
+        break
+      }
+    
       if (existing) {
         paddleCustomerId = existing.id
       } else {
@@ -73,20 +76,35 @@ export async function POST(req: NextRequest) {
         })
         paddleCustomerId = created.id
       }
-
+    
       await prisma.user.update({
         where: { id: user.id },
         data:  { paddleCustomerId },
       })
     }
+      
 
     // Create a Paddle transaction (generates a hosted checkout URL)
     const transaction = await paddle.transactions.create({
+      items: [
+        {
+          priceId,
+          quantity: 1,
+        },
+      ],
+    
       customerId: paddleCustomerId,
-      items: [{ priceId, quantity: 1 }],
-      checkoutSettings: {
-        successUrl: `${BASE}/dashboard/settings?upgraded=1&plan=${planId}`,
+    
+      checkout: {
+        url: `${BASE}/pricing`,
+        settings: {
+          displayMode: 'overlay',
+          theme: 'light',
+          locale: 'en',
+          successUrl: `${BASE}/dashboard/settings?upgraded=1&plan=${planId}`,
+        },
       },
+    
       customData: {
         userId: user.id,
         planId,
@@ -95,10 +113,15 @@ export async function POST(req: NextRequest) {
     })
 
     const checkoutUrl = transaction.checkout?.url
+    console.log(transaction)
+console.log('Checkout URL:', checkoutUrl)
     if (!checkoutUrl) throw new Error('Paddle did not return a checkout URL')
 
     console.log(`[checkout] Created transaction ${transaction.id} for user ${user.id} plan=${planId}`)
-    return NextResponse.json({ url: checkoutUrl })
+    return NextResponse.json({
+      url: checkoutUrl,
+      transactionId: transaction.id,
+    })
 
   } catch (err: any) {
     console.error('[checkout] Paddle error:', err?.message)
