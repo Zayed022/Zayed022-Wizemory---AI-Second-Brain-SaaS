@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       customerId: paddleCustomerId,
     
       checkout: {
-        url: `${BASE}/dashboard/settings?upgraded=1&plan=${planId}`,
+        url: `${BASE}/pricing`,
       },
     
       customData: {
