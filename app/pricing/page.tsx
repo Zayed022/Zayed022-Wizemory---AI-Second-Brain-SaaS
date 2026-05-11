@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import Script from 'next/script'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
@@ -33,15 +34,30 @@ const PLANS = [
 
 const FAQ = [
   { q: 'Can I cancel anytime?', a: 'Yes. Cancel from Settings. You keep access until period ends.' },
-  { q: 'Do you support UPI / Indian cards?', a: 'Yes — Stripe supports UPI, net banking, and all Indian cards.' },
+  { q: 'Do you support UPI / Indian cards?', a: 'Yes — Paddle supports UPI, net banking, and all Indian cards.' },
   { q: 'What happens to my data if I downgrade?', a: 'Your data is preserved. You just can\'t add new items beyond the free limit.' },
   { q: 'Is there a free trial for Pro?', a: 'The free plan lets you try everything with 50 items. No credit card needed.' },
   { q: 'Is my knowledge base private?', a: 'Completely private by default. We never sell or train AI on your data.' },
 ]
 
 export default function PricingPage() {
-  const [yearly, setYearly] = useState(false)
-  const [loading, setLoading] = useState<string | null>(null)
+  const [yearly, setYearly]         = useState(false)
+  const [loading, setLoading]       = useState<string | null>(null)
+  const [paddleReady, setPaddleReady] = useState(false)
+
+  function initPaddle() {
+    const Paddle = (window as any).Paddle
+    if (!Paddle) return
+    Paddle.Setup({
+      token: process.env.PADDLE_API_KEY,
+      eventCallback: (event: any) => {
+        if (event.name === 'checkout.completed') {
+          window.location.href = '/dashboard/settings?upgraded=1'
+        }
+      },
+    })
+    setPaddleReady(true)
+  }
 
   async function startCheckout(planId: string, href?: string) {
     if (href) { window.location.href = href; return }
@@ -52,14 +68,29 @@ export default function PricingPage() {
         body: JSON.stringify({ planId, yearly }),
       })
       const data = await res.json()
-      if (data.url) window.location.href = data.url
-      else toast.error(data.error ?? 'Something went wrong')
+
+      if (data.url) {
+        const Paddle = (window as any).Paddle
+        if (Paddle && paddleReady) {
+          Paddle.Checkout.open({ url: data.url })  // ✅ overlay, not redirect
+        } else {
+          window.location.href = data.url           // fallback
+        }
+      } else {
+        toast.error(data.error ?? 'Something went wrong')
+      }
     } catch { toast.error('Could not start checkout') }
     finally { setLoading(null) }
   }
 
   return (
     <div className="min-h-screen bg-ink-50">
+      {/* ✅ Load Paddle.js */}
+      <Script
+        src="https://cdn.paddle.com/paddle/v2/paddle.js"
+        onLoad={initPaddle}
+      />
+
       <nav className="border-b border-ink-100 bg-white px-6 py-4 flex items-center justify-between">
         <Link href="/" className="font-display text-xl text-ink-900">Wize<span className="text-violet-500">Mory</span></Link>
         <Link href="/auth/sign-up" className="px-4 py-2 bg-ink-900 text-ink-50 rounded-lg text-sm font-medium hover:bg-ink-800 transition-colors">Start free →</Link>
@@ -123,10 +154,10 @@ export default function PricingPage() {
         {/* Testimonials */}
         <div className="grid grid-cols-2 gap-4 mb-12">
           {[
-            { n: 'Priya Sharma', r: 'PhD Researcher', t: 'I save 30+ papers a week. WizeMory turned chaos into a knowledge base I actually use.', a: 'PS' },
-            { n: 'Marcus Chen', r: 'Product Manager', t: 'The AI connections feature linked two articles I\'d never have connected myself.', a: 'MC' },
-            { n: 'Sarah Williams', r: 'Startup Founder', t: 'Asked "what do I know about churn?" and got answers from 12 different saved articles.', a: 'SW' },
-            { n: 'Aditya Patel', r: 'Content Creator', t: 'The writing assistant uses my research to draft content that actually sounds like me.', a: 'AP' },
+            { n: 'Priya Sharma',    r: 'PhD Researcher',   t: 'I save 30+ papers a week. WizeMory turned chaos into a knowledge base I actually use.',         a: 'PS' },
+            { n: 'Marcus Chen',     r: 'Product Manager',  t: 'The AI connections feature linked two articles I\'d never have connected myself.',               a: 'MC' },
+            { n: 'Sarah Williams',  r: 'Startup Founder',  t: 'Asked "what do I know about churn?" and got answers from 12 different saved articles.',          a: 'SW' },
+            { n: 'Aditya Patel',    r: 'Content Creator',  t: 'The writing assistant uses my research to draft content that actually sounds like me.',           a: 'AP' },
           ].map(t => (
             <div key={t.n} className="bg-white border border-ink-100 rounded-2xl p-5">
               <div className="flex text-amber-400 text-xs mb-2">★★★★★</div>

@@ -17,6 +17,7 @@ model User {
   plan                 Plan     @default(FREE)
   stripeCustomerId     String?  @unique
   stripeSubscriptionId String?  @unique
+  paddleCustomerId     String?  @unique  
   itemCount            Int      @default(0)
   streak               Int      @default(0)
   lastActiveAt         DateTime @default(now())
