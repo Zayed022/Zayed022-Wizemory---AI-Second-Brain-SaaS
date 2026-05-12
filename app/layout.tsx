@@ -3,6 +3,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'react-hot-toast'
 import Script from 'next/script'
 import './globals.css'
+import GoogleAnalytics from '@/components/GoogleAnalytics'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? ''
 
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           )}
         </head>
         <body className="antialiased">
+        <GoogleAnalytics />
           {children}
           <Toaster
             position="bottom-right"
