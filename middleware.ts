@@ -1,6 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
 const isPublicRoute = createRouteMatcher([
   '/',
@@ -27,7 +26,30 @@ const isPublicRoute = createRouteMatcher([
   '/api/health',
 ])
 
+const isSEORoute = createRouteMatcher([
+  '/',
+  '/pricing',
+  '/demo',
+  '/demo/(.*)',
+  '/vs',
+  '/team',
+  '/about',
+  '/blog',
+  '/blog/(.*)',
+  '/changelog',
+  '/privacy',
+  '/terms',
+  '/founder',
+  '/tools/(.*)',
+  '/share/(.*)',
+])
+
 export default clerkMiddleware((auth, req) => {
+  // Return early — Clerk won't touch these responses at all
+  if (isSEORoute(req)) {
+    return NextResponse.next()
+  }
+
   if (!isPublicRoute(req)) {
     auth().protect()
   }
@@ -35,14 +57,6 @@ export default clerkMiddleware((auth, req) => {
 
 export const config = {
   matcher: [
-    /*
-     * Match all paths EXCEPT:
-     * - _next/static  (static files)
-     * - _next/image   (image optimization)
-     * - favicon.ico
-     * - sitemap.xml   ← bypass Clerk entirely at matcher level
-     * - robots.txt    ← bypass Clerk entirely at matcher level
-     */
     '/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt).*)',
   ],
 }

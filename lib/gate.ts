@@ -17,6 +17,7 @@
 
 import { NextResponse } from 'next/server'
 import type { Plan } from '@/types'
+import { prisma } from './prisma'
 
 // ── Feature matrix ────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ export function planGate(plan: Plan): PlanGate {
 
   return {
     plan,
-    canUseAI:          isPro,
+    canUseAI:          true,
     canUseAgent:       isPro,
     canUseGraph:       isPro,
     canExport:         isPro,
@@ -90,15 +91,31 @@ function counterKey(userId: string): string {
   return `${userId}:${month}`
 }
 
-export function incrementAiCount(userId: string): number {
-  const key = counterKey(userId)
-  const cur = aiCounters.get(key) ?? 0
-  aiCounters.set(key, cur + 1)
-  return cur + 1
+export async function incrementAiCount(userId: string): Promise<number> {
+  const month   = new Date().toISOString().slice(0, 7)
+  const current = await getAiCount(userId)
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data:  {
+      aiQueriesUsed:  current + 1,
+      aiQueriesMonth: month,
+    },
+    select: { aiQueriesUsed: true },
+  })
+  return updated.aiQueriesUsed
 }
 
-export function getAiCount(userId: string): number {
-  return aiCounters.get(counterKey(userId)) ?? 0
+
+export async function getAiCount(userId: string): Promise<number> {
+  const month = new Date().toISOString().slice(0, 7) // "2026-05"
+  const user  = await prisma.user.findUnique({
+    where:  { id: userId },
+    select: { aiQueriesUsed: true, aiQueriesMonth: true },
+  })
+  if (!user) return 0
+  // If stored month doesn't match current month, counter has effectively reset
+  return user.aiQueriesMonth === month ? user.aiQueriesUsed : 0
 }
 
 export const AI_QUERY_LIMIT_FREE = 10

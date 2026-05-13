@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
   // ── FREE plan: enforce monthly query limit ───────────────────────────────
   if (user.plan === 'FREE') {
-    const used = getAiCount(user.id)
+    const used = await getAiCount(user.id)
     if (used >= AI_QUERY_LIMIT_FREE) {
       return NextResponse.json({
         error:   `Monthly AI limit reached (${AI_QUERY_LIMIT_FREE} queries/month on Free plan).`,
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         url:     '/pricing',
       }, { status: 403 })
     }
-    incrementAiCount(user.id)
+    await incrementAiCount(user.id)  // ← await added
   }
 
   const body     = await req.json().catch(() => ({}))
