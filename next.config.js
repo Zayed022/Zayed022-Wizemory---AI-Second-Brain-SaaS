@@ -10,7 +10,16 @@ const nextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: '10mb' },
   },
-  // ✅ Removed the www redirect — handle this at DNS/Vercel level instead
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'wizemory.com' }],
+        destination: 'https://www.wizemory.com/:path*',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
